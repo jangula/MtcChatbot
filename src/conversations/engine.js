@@ -170,10 +170,14 @@ class ConversationEngine {
     const cmd = command.toLowerCase();
 
     switch (cmd) {
-      case 'menu':
-      case 'start':
       case 'hi':
       case 'hello':
+      case 'start':
+        await state.reset();
+        await state.save();
+        return this.showWelcomeWithMenu(user);
+
+      case 'menu':
       case '00':
         await state.reset();
         await state.save();
@@ -201,7 +205,7 @@ class ConversationEngine {
             type: 'multiple',
             messages: [
               { type: 'text', text: 'Operation cancelled.' },
-              { type: 'menu', greeting: 'What would you like to do?' },
+              { type: 'text', text: this.getMenuText() },
             ],
           };
         }
@@ -295,15 +299,29 @@ class ConversationEngine {
    */
   isFlowSelection(content) {
     const flowIds = Object.keys(this.flows);
-    return flowIds.includes(content) || /^[0-9]$/.test(content);
+    const letterSelection = /^[a-jA-J]$/.test(content);
+    const numberSelection = /^[0-9]$/.test(content);
+    return flowIds.includes(content) || letterSelection || numberSelection;
   }
 
   /**
    * Start a new conversation flow
    */
   async startFlow(user, state, flowId, session) {
-    // Map number selections to flow IDs
+    // Map letter and number selections to flow IDs
     const menuMap = {
+      // Letter selections (primary)
+      'a': 'BUY_AIRTIME',
+      'b': 'BUY_DATA',
+      'c': 'SEND_MONEY',
+      'd': 'PAY_BILL',
+      'e': 'PAY_MERCHANT',
+      'f': 'CHECK_BALANCE',
+      'g': 'TRANSACTION_HISTORY',
+      'h': 'INSTANT_LOAN',
+      'i': 'SAVINGS',
+      'j': 'INSURANCE',
+      // Number selections (legacy support)
       '1': 'BUY_AIRTIME',
       '2': 'BUY_DATA',
       '3': 'SEND_MONEY',
@@ -316,7 +334,8 @@ class ConversationEngine {
       '0': 'INSURANCE',
     };
 
-    const actualFlowId = menuMap[flowId] || flowId;
+    const normalizedInput = flowId?.toLowerCase?.() || flowId;
+    const actualFlowId = menuMap[normalizedInput] || flowId;
     const flow = this.flows[actualFlowId];
 
     if (!flow) {
@@ -344,7 +363,7 @@ class ConversationEngine {
         type: 'multiple',
         messages: [
           { type: 'text', text: response.text },
-          { type: 'menu', greeting: 'What would you like to do next?' },
+          { type: 'text', text: this.getMenuText() },
         ],
       };
     }
@@ -377,7 +396,7 @@ class ConversationEngine {
         type: 'multiple',
         messages: [
           { type: 'text', text: response.text },
-          { type: 'menu', greeting: 'What would you like to do next?' },
+          { type: 'text', text: this.getMenuText() },
         ],
       };
     }
@@ -386,17 +405,59 @@ class ConversationEngine {
   }
 
   /**
+   * Show welcome message followed by menu
+   */
+  showWelcomeWithMenu(user) {
+    const greeting = user.first_name
+      ? `Hi ${user.first_name}! Welcome to MTC Maris.`
+      : 'Hi! Welcome to MTC Maris.';
+
+    return {
+      type: 'multiple',
+      messages: [
+        {
+          type: 'text',
+          text: `${greeting}\n\nYour mobile wallet for airtime, data, payments and more.`,
+        },
+        {
+          type: 'text',
+          text: this.getMenuText(),
+        },
+      ],
+    };
+  }
+
+  /**
    * Show main menu
    */
   showMainMenu(user) {
-    const greeting = user.first_name
-      ? `Hi ${user.first_name}!`
-      : 'Welcome to MTC Maris!';
-
     return {
-      type: 'menu',
-      greeting,
+      type: 'text',
+      text: this.getMenuText(),
     };
+  }
+
+  /**
+   * Get menu text with letter options
+   */
+  getMenuText() {
+    return `How can I help you today?\n\nChoose an option from the menu below or type your question:\n
+*SERVICES*
+A. Buy Airtime
+B. Buy Data Bundle
+C. Send Money
+D. Pay Bill
+E. Pay Merchant
+
+*ACCOUNT*
+F. Check Balance
+G. Transaction History
+H. Instant Loan
+I. Savings
+J. Insurance
+
+_Reply with a letter (A-J) to select an option_
+_Type HELP for assistance or MENU to see this again_`;
   }
 }
 

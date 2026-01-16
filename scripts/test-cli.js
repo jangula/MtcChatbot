@@ -78,17 +78,19 @@ function printResponse(resp) {
   } else if (resp.type === 'menu') {
     console.log('│ ' + (resp.greeting || 'Welcome!'));
     console.log('│');
-    console.log('│ --- Main Menu ---');
-    console.log('│ [1] Buy Airtime');
-    console.log('│ [2] Buy Data Bundle');
-    console.log('│ [3] Send Money');
-    console.log('│ [4] Pay Bill');
-    console.log('│ [5] Pay Merchant');
-    console.log('│ [6] Check Balance');
-    console.log('│ [7] Transaction History');
-    console.log('│ [8] Instant Loan');
-    console.log('│ [9] Savings');
-    console.log('│ [0] Insurance');
+    console.log('│ --- SERVICES ---');
+    console.log('│ [A] Buy Airtime');
+    console.log('│ [B] Buy Data Bundle');
+    console.log('│ [C] Send Money');
+    console.log('│ [D] Pay Bill');
+    console.log('│ [E] Pay Merchant');
+    console.log('│');
+    console.log('│ --- ACCOUNT ---');
+    console.log('│ [F] Check Balance');
+    console.log('│ [G] Transaction History');
+    console.log('│ [H] Instant Loan');
+    console.log('│ [I] Savings');
+    console.log('│ [J] Insurance');
   } else if (resp.type === 'confirmation') {
     console.log('│ ' + resp.text.split('\n').join('\n│ '));
     console.log('│');
@@ -146,7 +148,8 @@ async function main() {
 
   console.log('Test phone: ' + testPhone);
   console.log('Type messages to interact with the bot.');
-  console.log('Commands: MENU, HELP, CANCEL, EXIT (to quit)\n');
+  console.log('Menu options: A-J | Commands: MENU, HELP, CANCEL');
+  console.log('Type EXIT or QUIT to close\n');
   console.log('─────────────────────────────────────────────────\n');
 
   // Start with a greeting
